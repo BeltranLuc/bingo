@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bingo personnalisé</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#f5f5f5; padding:20px; }
+    h1 { font-size:1.5rem; }
+    textarea { width:100%; height:120px; }
+    button { padding:10px 16px; margin:10px 0; cursor:pointer; }
+    .grid { display:grid; grid-template-columns: repeat(5, 1fr); gap:8px; margin-top:20px; }
+    .cell { background:white; border:2px solid #ccc; padding:12px; text-align:center; cursor:pointer; user-select:none; border-radius:8px; min-height:70px; display:flex; align-items:center; justify-content:center; }
+    .cell.checked { background:#4ade80; border-color:#22c55e; color:#064e3b; font-weight:bold; }
+    .hint { font-size:0.9rem; color:#555; margin-top:8px; }
+  </style>
+</head>
+<body>
+  <h1>🎯 Générateur de cartes de Bingo personnalisées</h1>
+
+  <p>Entre tes textes (1 par ligne). Minimum 25 éléments.</p>
+  <textarea id="items" placeholder="Exemple :
+Quelqu'un parle trop fort
+Blague nulle
+Café renversé"></textarea>
+
+  <button onclick="generateBingo()">Générer une carte</button>
+
+  <div class="grid" id="bingo"></div>
+
+  <p class="hint">Clique sur une case pour la cocher / décocher. Fonctionne 100% en ligne, sans compte.</p>
+
+  <script>
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function generateBingo() {
+      const input = document.getElementById('items').value
+        .split('\n')
+        .map(t => t.trim())
+        .filter(t => t.length > 0);
+
+      if (input.length < 25) {
+        alert('Il faut au moins 25 textes pour une carte de bingo.');
+        return;
+      }
+
+      const grid = document.getElementById('bingo');
+      grid.innerHTML = '';
+
+      const selected = shuffle([...input]).slice(0, 25);
+
+      selected.forEach(text => {
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        cell.textContent = text;
+        cell.onclick = () => cell.classList.toggle('checked');
+        grid.appendChild(cell);
+      });
+    }
+  </script>
+</body>
+</html>

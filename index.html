@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bingo personnalisé</title>
+  <title>Bingo </title>
   <style>
     body { font-family: Arial, sans-serif; background:#f5f5f5; padding:20px; }
     h1 { font-size:1.5rem; }
@@ -19,16 +19,13 @@
   <h1>🎯 Générateur de cartes de Bingo personnalisées</h1>
 
   <p>Entre tes textes (1 par ligne). Minimum 25 éléments.</p>
-  <textarea id="items" placeholder="Exemple :
-Quelqu'un parle trop fort
-Blague nulle
-Café renversé"></textarea>
+  <textarea id="items" placeholder=""></textarea>
 
   <button onclick="generateBingo()">Générer une carte</button>
 
   <div class="grid" id="bingo"></div>
 
-  <p class="hint">Clique sur une case pour la cocher / décocher. Fonctionne 100% en ligne, sans compte.</p>
+  <p class="hint">Clique sur une case pour la cocher / décocher.</p>
 
   <script>
     function shuffle(array) {
@@ -66,3 +63,4 @@ Café renversé"></textarea>
   </script>
 </body>
 </html>
+

@@ -3,29 +3,55 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bingo </title>
+  <title>Bingo personnalisé</title>
+  <!-- Ajout de la librairie PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  
   <style>
     body { font-family: Arial, sans-serif; background:#f5f5f5; padding:20px; }
     h1 { font-size:1.5rem; }
     textarea { width:100%; height:120px; }
-    button { padding:10px 16px; margin:10px 0; cursor:pointer; }
+    button { padding:10px 16px; margin:10px 5px 10px 0; cursor:pointer; border: none; border-radius: 4px; }
+    
+    .btn-generate { background: #2563eb; color: white; }
+    .btn-pdf { background: #dc2626; color: white; display: none; } /* Caché par défaut */
+
+    /* Conteneur pour le PDF */
+    #print-area { padding: 10px; background: #f5f5f5; }
+
     .grid { display:grid; grid-template-columns: repeat(5, 1fr); gap:8px; margin-top:20px; }
-    .cell { background:white; border:2px solid #ccc; padding:12px; text-align:center; cursor:pointer; user-select:none; border-radius:8px; min-height:70px; display:flex; align-items:center; justify-content:center; }
+    .cell { background:white; border:2px solid #ccc; padding:12px; text-align:center; cursor:pointer; user-select:none; border-radius:8px; min-height:70px; display:flex; align-items:center; justify-content:center; word-break: break-word; font-size: 0.9rem; }
     .cell.checked { background:#4ade80; border-color:#22c55e; color:#064e3b; font-weight:bold; }
     .hint { font-size:0.9rem; color:#555; margin-top:8px; }
+
+    /* Style spécifique pour l'impression/PDF */
+    @media print {
+      .no-print { display: none !important; }
+    }
   </style>
 </head>
 <body>
-  <h1>🎯 Générateur de cartes de Bingo personnalisées</h1>
 
-  <p>Entre tes textes (1 par ligne). Minimum 25 éléments.</p>
-  <textarea id="items" placeholder=""></textarea>
+  <div class="no-print">
+    <h1>🎯 Générateur de cartes de Bingo personnalisées</h1>
+    <p>Entre tes textes (1 par ligne). Minimum 25 éléments.</p>
+    <textarea id="items" placeholder="Exemple :
+Quelqu'un parle trop fort
+Blague nulle
+Café renversé"></textarea>
 
-  <button onclick="generateBingo()">Générer une carte</button>
+    <br>
+    <button class="btn-generate" onclick="generateBingo()">Générer une carte</button>
+    <button id="download-btn" class="btn-pdf" onclick="downloadPDF()">Télécharger en PDF</button>
+  </div>
 
-  <div class="grid" id="bingo"></div>
+  <!-- C'est cette zone qui sera convertie en PDF -->
+  <div id="print-area">
+    <h2 id="pdf-title" style="display:none; text-align:center;">Ma Carte de Bingo</h2>
+    <div class="grid" id="bingo"></div>
+  </div>
 
-  <p class="hint">Clique sur une case pour la cocher / décocher.</p>
+  <p class="hint no-print">Clique sur une case pour la cocher / décocher. Fonctionne 100% en ligne.</p>
 
   <script>
     function shuffle(array) {
@@ -59,8 +85,32 @@
         cell.onclick = () => cell.classList.toggle('checked');
         grid.appendChild(cell);
       });
+
+      // Afficher le bouton PDF une fois la grille générée
+      document.getElementById('download-btn').style.display = 'inline-block';
+    }
+
+    function downloadPDF() {
+      const element = document.getElementById('print-area');
+      const title = document.getElementById('pdf-title');
+      
+      // Afficher temporairement le titre pour le PDF
+      title.style.display = 'block';
+
+      const options = {
+        margin:       10,
+        filename:     'mon-bingo.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, logging: false },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      // Générer le PDF
+      html2pdf().set(options).from(element).save().then(() => {
+        // Recacher le titre après la génération
+        title.style.display = 'none';
+      });
     }
   </script>
 </body>
 </html>
-

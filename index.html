@@ -120,8 +120,10 @@ Quelqu'un parle trop fort
 Blague nulle
 Café renversé"></textarea>
 
-    <button class="btn-import" onclick="openPadExport()">📋 Importer depuis le Framapad</button>
-    <p class="hint">Ça ouvre le contenu du pad dans un nouvel onglet : sélectionne tout (Ctrl/Cmd+A), copie, puis colle-le ci-dessus.</p>
+    <label for="pad-url" class="hint" style="display:block; margin-top:14px;">Lien vers la liste (pad, Framapad, page texte, etc.)</label>
+    <input type="url" id="pad-url" placeholder="https://hebdo.framapad.org/p/..." style="width:100%; padding:10px; font-size:16px; border:1px solid #ccc; border-radius:6px; margin-top:4px;">
+    <button class="btn-import" onclick="importFromUrl()">📋 Importer depuis une liste</button>
+    <p class="hint">Ça tente d'importer automatiquement le texte. Si ça ne marche pas (certains sites bloquent l'import), le contenu s'ouvrira dans un nouvel onglet : sélectionne tout, copie, puis colle-le ci-dessus.</p>
 
     <button class="btn-generate" onclick="generateBingo()">Générer une carte</button>
     <button id="download-btn" class="btn-pdf" onclick="downloadPDF()">Télécharger en PDF</button>
@@ -142,22 +144,43 @@ Café renversé"></textarea>
       return array;
     }
 
-    const PAD_EXPORT_URL = 'https://hebdo.framapad.org/p/bingo-0109-ana7/export/txt';
-
-    async function openPadExport() {
-      // On tente une récupération automatique du contenu.
-      // Si le site du pad bloque les requêtes cross-origin (CORS), ce qui est
-      // très probable, on ouvre simplement l'export dans un nouvel onglet
-      // pour que tu puisses copier/coller le texte toi-même.
+    function buildExportUrl(rawUrl) {
+      // Si c'est un lien Framapad classique (.../p/nom-du-pad), on le
+      // transforme automatiquement en lien d'export texte.
       try {
-        const res = await fetch(PAD_EXPORT_URL);
+        const u = new URL(rawUrl);
+        if (u.hostname.includes('framapad.org') && u.pathname.includes('/p/') && !u.pathname.includes('/export/')) {
+          const cleanPath = u.pathname.replace(/\/$/, '');
+          return u.origin + cleanPath + '/export/txt';
+        }
+      } catch (e) {
+        // lien invalide, on le renverra tel quel plus bas
+      }
+      return rawUrl;
+    }
+
+    async function importFromUrl() {
+      const rawUrl = document.getElementById('pad-url').value.trim();
+      if (!rawUrl) {
+        alert('Colle d\'abord un lien vers ta liste.');
+        return;
+      }
+
+      const exportUrl = buildExportUrl(rawUrl);
+
+      // On tente une récupération automatique du contenu.
+      // Beaucoup de sites bloquent les requêtes cross-origin (CORS) : dans
+      // ce cas on ouvre simplement le lien dans un nouvel onglet pour que tu
+      // puisses copier/coller le texte toi-même.
+      try {
+        const res = await fetch(exportUrl);
         if (!res.ok) throw new Error('Réponse non valide');
         const text = await res.text();
         document.getElementById('items').value = text.trim();
-        alert('Contenu importé automatiquement depuis le Framapad !');
+        alert('Contenu importé automatiquement !');
       } catch (e) {
-        window.open(PAD_EXPORT_URL, '_blank');
-        alert("Le navigateur bloque l'import automatique (normal, sécurité du site du pad).\nLe contenu s'ouvre dans un nouvel onglet : sélectionne tout, copie, puis colle-le dans la zone de texte ici.");
+        window.open(exportUrl, '_blank');
+        alert("L'import automatique a été bloqué (sécurité du site source).\nLe contenu s'ouvre dans un nouvel onglet : sélectionne tout, copie, puis colle-le dans la zone de texte ici.");
       }
     }
 
